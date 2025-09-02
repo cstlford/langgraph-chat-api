@@ -42,6 +42,16 @@ uv sync
 
 ---
 
+### 5. Configure Environment Variables
+
+```bash
+cp .env.example .env
+```
+
+update the `.env` file with your values (API Keys, Snowflake credentials, etc.).
+
+---
+
 ## 🚀 Start the Project
 
 ```bash
@@ -58,3 +68,5 @@ Build and run the interpreter service Docker image:
 docker build -f interpreter/Dockerfile -t othelia-interpreter .
 docker run -p 8001:8001 othelia-interpreter
 ```
+
+_Note: this is a required tool of the analysis agent_
