@@ -1,0 +1,9 @@
+{
+  "dockerfile_lines": [],
+  "graphs": {
+    "othelia": "./app/agent/graph.py:create_graph"
+  },
+  "env": "./.env",
+  "python_version": "3.13",
+  "dependencies": ["."]
+}

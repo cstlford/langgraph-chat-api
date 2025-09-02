@@ -1,0 +1,12 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+
+# Virtual environments
+.venv
+.env
+
+**/chroma_db/
+.langgraph_api/

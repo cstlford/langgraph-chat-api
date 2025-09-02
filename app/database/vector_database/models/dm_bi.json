@@ -1,0 +1,84 @@
+{
+  "VW_HOTEL": {
+    "table_name": "VW_HOTEL",
+    "schema": "DM_BI",
+    "description": "Hotel master data including names, locations, organizational details. Used for mapping hotel IDs to readable names and property information.",
+    "usage": "Get hotel names for reporting, map HOTEL_ID to property names, hotel location data, property details, organizational structure",
+    "keywords": "hotel names, property names, locations, hotel details, property information, hotel mapping",
+    "columns": [
+      "ID: Number, Example: 657",
+      "ORGANIZATION_ID: Number, Example: 38",
+      "Name: Varchar, Example: Hotel A",
+      "STATE_ID: Number, Example:",
+      "CITY_ID: Number, Example:",
+      "REGION_ID: Number, Example:",
+      "MANAGEMENT: Varchar, Example:",
+      "ROOMS: Number, Example:"
+    ]
+  },
+  "VW_ISP_PMS_BOB": {
+    "table_name": "VW_ISP_PMS_BOB",
+    "schema": "DM_BI",
+    "description": "Business on the Books (BOB) - confirmed future bookings and reservations. Contains hotel property management system data with room revenue, ADR calculations, occupancy metrics, and booking details for upcoming stays.",
+    "usage": "Primary source for future revenue analysis, business on books reporting, ADR calculations, occupancy forecasting. Use for next 3 months revenue, confirmed bookings, rate analysis, market segment performance, booking channel analysis. Filter by BUSINESS_DATE for date ranges and PMS_RES_STATUS for confirmed reservations only.",
+    "keywords": "revenue, bookings, reservations, ADR, rate, future business, confirmed stays, room nights, occupancy, market segment, booking source, group bookings",
+    "columns": [
+      "ID: Number, Example: 6790531",
+      "HOTEL_ID: Number, Example: 657",
+      "ORGANIZATION_ID: Number, Example: 38",
+      "ROOMS: Number, Example: 1",
+      "ROOM_REVENUE: Number, Example: 321.75",
+      "LENGTH_OF_STAY: Number, Example: 1.00",
+      "BUSINESS_DATE: Number, Example: 20250810",
+      "SNAP_DATE: Number, Example: 20250710",
+      "BOOKING_DATE: Number, Example: 20250514",
+      "PMS_ROOM_TYPE: Varchar, Example: TVCIN-KNGN",
+      "PMS_ROOM_TYPE_FID: Number, Example: 1207396850",
+      "PMS_ROOM_RATE: Number, Example: 322",
+      "PMS_ROOM_RATE_FID: Number, Example: 119565359",
+      "PMS_MARKET_SEGMENT: Varchar, Example: TVCIN-D",
+      "PMS_MARKET_SEGMENT_FID: Number, Example: 1207664108",
+      "PMS_BOOKING_SOURCE: Varchar, Example: TVCIN-AA",
+      "PMS_BOOKING_SOURCE_FID: Number, Example: 1207630550",
+      "ADULTS: Number, Example: 2",
+      "CHILDREN: Number, Example: 1",
+      "PMS_GROUP_CODE: Varchar, Example: Searcy Gorman Family Reunion 2025",
+      "PMS_GROUP_CODE_PID: Number, Example: 1207584241",
+      "PMS_RES_STATUS: Varchar, Example: RESERVED | CHECKED IN | CHECKED OUT | cancelled"
+    ]
+  },
+  "VW_ISP_PMS_INVENTORY": {
+    "table_name": "VW_ISP_PMS_INVENTORY",
+    "schema": "DM_BI",
+    "description": "Room inventory and capacity data by date and room type. Shows total available rooms, out-of-order rooms, and capacity constraints. Used for occupancy rate calculations and capacity planning.",
+    "usage": "Calculate total room inventory, available capacity, occupancy percentages, capacity constraints, room availability. Combine with BOB data for occupancy analysis and revenue optimization.",
+    "keywords": "inventory, capacity, rooms available, occupancy, out of order, room count, availability, total rooms, capacity planning",
+    "columns": [
+      "ID: Number, Example: 1663705",
+      "ORGANIZATION_ID: Number, Example: 38",
+      "HOTEL_ID: Number, Example: 657",
+      "BUSINESS_DATE: Number, Example: 20250711",
+      "PMS_ROOM_TYPE: Varchar, Example: TVCIN-KNGN",
+      "PMS_ROOM_TYPE_FID: Number, Example: 1207396850",
+      "PAST_INVENTORY: Number, Example: 1",
+      "FUTURE_INVENTORY: Number, Example: ",
+      "OUT_OF_ORDER: Number, Example: "
+    ]
+  },
+  "VW_ISP_PMS_RESERVATION_CANCELLATION": {
+    "table_name": "VW_ISP_PMS_RESERVATION_CANCELLATION",
+    "schema": "DM_BI",
+    "description": "The table contains records of reservation cancellations for hotel bookings. Each record includes details about the cancellation",
+    "usage": "Analyze hotel reservation cancellation patterns, identify peak cancellation dates, track revenue impact from cancelled bookings, and investigate cancellation reasons across hotels and time periods.",
+    "keywords": "reservation cancellation, booking cancellation, hotel cancellation, cancel revenue, cancel rooms, cancellation date, cancellation reason, PMS cancellation, booking date, business date, hotel revenue loss, cancellation analysis, cancellation trends, cancellation patterns, revenue impact",
+    "columns": [
+      "HOTEL_ID: Number, Example: 657",
+      "BUSINESS_DATE: Number, Example: 20260312",
+      "BOOKING_DATE: Number, Example: 20250607",
+      "CANCELLATION_DATE: Number, Example: 20260312",
+      "CANCEL_REVENUE: Number, Example: 154.16",
+      "CANCEL_ROOMS: Number, Example: 1.0",
+      "PMS_CANCEL_REASON: Varchar, Example: Other - See Comments Below"
+    ]
+  }
+}

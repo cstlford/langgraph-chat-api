@@ -1,0 +1,21 @@
+[project]
+name = "othelia"
+version = "0.1.0"
+description = "Chatbot for Hotelier Questions"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[all]>=0.116.1",
+    "jq>=1.10.0",
+    "langchain>=0.3.27",
+    "langchain-chroma>=0.2.5",
+    "langchain-community>=0.3.29",
+    "langchain-openai>=0.3.32",
+    "langchain-tavily>=0.2.11",
+    "langgraph>=0.6.6",
+    "langgraph-api>=0.4.1",
+    "langgraph-cli>=0.4.0",
+    "langgraph-supervisor>=0.0.29",
+    "snowflake-sqlalchemy>=1.7.6",
+    "websockets>=15.0.1",
+]

@@ -1,0 +1,22 @@
+{
+  "VW_ISP_DATA_PMS_TRANSACTIONAL_REVENUE": {
+    "table_name": "VW_ISP_DATA_PMS_TRANSACTIONAL_REVENUE",
+    "schema": "ISP",
+    "description": "Contains historical information for Room Revenue - use for past ADR - note, using mappings in dm_bi.VW_HOTEL",
+    "columns": [
+      "HOTEL_ID: Number, Example: 665",
+      "BUSINESS_DATE: Varchar - YYYYMMDD format, Example: 20250206",
+      "ROOM_REVENUE: Number, Example: 475"
+    ]
+  },
+  "VW_ISP_DATA_PMS_ROOMS_SOLD": {
+    "table_name": "VW_ISP_DATA_PMS_ROOMS_SOLD",
+    "schema": "ISP",
+    "description": "Contains historical information for Room Inventory - use for ADR",
+    "columns": [
+      "HOTEL_CODE_ID: Number, Example: 1036829",
+      "BUSINESS_DATE: Varchar - YYYYMMDD format, Example: 20250206",
+      "ROOMS_SOLD: Number, Example: 25"
+    ]
+  }
+}

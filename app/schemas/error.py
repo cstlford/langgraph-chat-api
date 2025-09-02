@@ -1,0 +1,2 @@
+class DatabaseNotFoundError(Exception):
+    pass

@@ -1,0 +1,22 @@
+[project]
+name = "code_interpreter"
+version = "0.1.0"
+description = "Python interpreter for langgraph agent"
+requires-python = ">=3.13"
+dependencies = [
+    # Core FastAPI and server dependencies
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+
+    # Data manipulation and analysis
+    "pandas",
+    "numpy",
+
+    # Visualization
+    "matplotlib",
+    "seaborn",
+
+    # HTTP requests
+    "requests",
+]
