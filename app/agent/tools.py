@@ -1,4 +1,4 @@
-from typing import Any, Callable, Literal
+from typing import Any, Callable
 import httpx
 
 from langchain_tavily import TavilySearch
@@ -11,7 +11,7 @@ from sqlalchemy.sql import text
 
 from app.config import settings
 from app.database.snowflake import get_snowflake_conn
-from app.database.vector_database.vector_store import get_vectorstore
+from app.database.vector_database.vector_db import get_or_create_vector_store
 
 
 @tool
@@ -19,16 +19,18 @@ async def code_interpreter(code: str, config: RunnableConfig):
     """Execute Python code in a secure sandboxed environment.
 
     You have access to a preloaded Python environment with common data science, math, and visualization libraries, including:
-
-    - pandas, numpy, scipy, scikit-learn, statsmodels
-    - matplotlib, seaborn, plotly
-    - sympy, networkx
-    - requests, httpx, BeautifulSoup (bs4), lxml
-    - Pillow (image processing), python-dateutil, pytz
-    - openpyxl, xlsxwriter (Excel I/O)
+    - pandas, numpy, matplotlib, seaborn
 
     A helper function `execute_sql(sql: str) -> pd.DataFrame` is also available for querying Snowflake.
     Use it to run SELECT queries and receive results as a pandas DataFrame.
+
+    Returns {'output': str, 'errors': str, 'images': [], 'objects': {}}
+
+    Important! To return results, either print them or assign them to a variable.
+    ex:
+        print(execute_sql("SELECT * FROM my_table")) // returns as output
+        or
+        result = execute_sql("SELECT * FROM my_table") // returns as object
     """
     url = settings.interpreter_url
     database = config.get("configurable", {}).get("database", None)
@@ -46,56 +48,32 @@ async def code_interpreter(code: str, config: RunnableConfig):
 
 
 @tool
-def schema_retriever(query: str, schema_filter: Literal["isp", "dm_bi"]) -> str:
-    """Search the Snowflake database schema to find tables and columns for SQL query generation.
-
-    Use this tool when you need to:
-    - Find which tables contain specific data (occupancy, revenue, bookings, etc.)
-    - Get column names and data types for SQL queries
-    - Understand table relationships and structure
-    - Find the right business metrics and dimensions
+def schema_retriever(query: str) -> str:
+    """Search a vector database with snowflake database schema to find tables and columns for SQL query generation.
 
     Args:
         query: Describe what data you're looking for. If searching for derived metrics,
         search for the constituent parts.
 
         Examples:
-            "future revenue and bookings for next quarter"
-            "ADR calculation and rate analysis"
-            "occupancy rates and room inventory"
-            "hotel property names and locations"
-            "capacity planning and room availability"
-            "confirmed reservations and business on books"
-
-        schema_filter: Which schema to search:
-            - "dm_bi": Business Intelligence views for future bookings, inventory,
-              hotel details. Use for questions about upcoming business, occupancy
-              projections, and capacity analysis.
-            - "isp": Historical operational data for past performance analysis,
-              completed stays, and historical ADR calculations.
+            - "business on the books"
 
     Returns: Table structures with column names, data types, sample values, and
     usage guidance to help write accurate SQL queries for hotel business analysis.
     """
-    vectorstore = get_vectorstore()
-    retriever = vectorstore.as_retriever(
-        search_kwargs={"k": 4, "filter": {"schema": schema_filter}}
-    )
+    vectorstore = get_or_create_vector_store()
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-    retriever_tool = create_retriever_tool(
+    return create_retriever_tool(
         retriever,
-        "retrieve_snowflake_schema",
-        "Search and return information about the Snowflake schema.",
-    )
-
-    results = retriever_tool.invoke({"query": query})
-
-    return results
+        "",
+        "",
+    ).invoke({"query": query})
 
 
 @tool
 def sql_executor(sql: str, config: RunnableConfig):
-    """Execute a SQL query against the Snowflake database."""
+    """Execute a SQL query against the Snowflake database. Always add a limit 10 clause when testing queries."""
     database = config.get("configurable", {}).get("database", None)
 
     if database is None:
@@ -131,11 +109,11 @@ def load_chat_model(model_provider: str) -> BaseChatModel:
     try:
         provider, model = model_provider.split("/", maxsplit=1)
         return init_chat_model(model, model_provider=provider)
-    except ValueError:
+    except ValueError as ve:
         raise ValueError(
             f"Expected model_provider in format 'provider/model', got: '{model_provider}'"
-        )
+        ) from ve
     except Exception as e:
         raise RuntimeError(
             f"Failed to initialize model '{model}' with provider '{provider}': {e}"
-        )
+        ) from e

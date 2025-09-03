@@ -8,11 +8,14 @@
     "columns": [
       "ID: Number, Example: 657",
       "ORGANIZATION_ID: Number, Example: 38",
-      "Name: Varchar, Example: Hotel A",
+      "DISPLAY_NAME: Varchar, Example: Hotel A",
       "STATE_ID: Number, Example:",
       "CITY_ID: Number, Example:",
+      "POSTAL_CODE: Varchar, Example:",
       "REGION_ID: Number, Example:",
+      "TIME_ZONE_ID: Number, Example:",
       "MANAGEMENT: Varchar, Example:",
+      "FRANCHISE: Varchar, Example:",
       "ROOMS: Number, Example:"
     ]
   },
@@ -20,7 +23,7 @@
     "table_name": "VW_ISP_PMS_BOB",
     "schema": "DM_BI",
     "description": "Business on the Books (BOB) - confirmed future bookings and reservations. Contains hotel property management system data with room revenue, ADR calculations, occupancy metrics, and booking details for upcoming stays.",
-    "usage": "Primary source for future revenue analysis, business on books reporting, ADR calculations, occupancy forecasting. Use for next 3 months revenue, confirmed bookings, rate analysis, market segment performance, booking channel analysis. Filter by BUSINESS_DATE for date ranges and PMS_RES_STATUS for confirmed reservations only.",
+    "usage": "Primary source for future revenue analysis, business on books reporting, ADR calculations, occupancy forecasting. Use for next 3 months revenue, confirmed bookings, rate analysis, market segment performance, booking channel analysis. Filter by BUSINESS_DATE for date ranges .",
     "keywords": "revenue, bookings, reservations, ADR, rate, future business, confirmed stays, room nights, occupancy, market segment, booking source, group bookings",
     "columns": [
       "ID: Number, Example: 6790531",
