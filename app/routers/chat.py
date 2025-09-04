@@ -9,7 +9,7 @@ from fastapi import (
     HTTPException,
     Request,
 )
-from langchain_core.messages import BaseMessage, HumanMessage
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from sse_starlette import EventSourceResponse
 
@@ -46,7 +46,7 @@ async def stream(request: Request, chat_request: ChatRequest):
 
         async def event_generator():
             try:
-                async for msg, metadata in graph.astream(  # type: ignore
+                async for chunk in graph.astream(
                     {"messages": [HumanMessage(content=chat_request.message["text"])]},
                     config=RunnableConfig(
                         configurable={
@@ -54,32 +54,36 @@ async def stream(request: Request, chat_request: ChatRequest):
                             "database": database,
                         }
                     ),
-                    stream_mode="messages",
+                    stream_mode="updates",
                 ):
                     if await request.is_disconnected():
                         logger.info("Client disconnected during stream")
                         return
 
-                    msg: BaseMessage
-                    metadata: dict[str, Any]
                     event = None
                     data = None
 
-                    node: str = metadata.get("langgraph_node", "")
+                    supervisor_msgs = chunk.get("supervisor", {}).get("messages", [])
 
-                    if node == "supervisor":
-                        if msg.content:
+                    for msg in supervisor_msgs[-1:]:
+                        if isinstance(msg, AIMessage):
                             event = "message"
                             data = msg.content
-
-                    elif node in agent_config.route_config:
-                        event = "route"
-                        data = json.dumps(
-                            {
-                                "destination": agent_config.route_config[node]["name"],
-                                "message": agent_config.route_config[node]["message"],
-                            }
-                        )
+                        elif (
+                            isinstance(msg, ToolMessage)
+                            and msg.name in agent_config.route_config
+                        ):
+                            event = "route"
+                            data = json.dumps(
+                                {
+                                    "destination": agent_config.route_config[msg.name][
+                                        "name"
+                                    ],
+                                    "message": agent_config.route_config[msg.name][
+                                        "message"
+                                    ],
+                                }
+                            )
 
                     if event is not None:
                         yield {"event": event, "data": data}

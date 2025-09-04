@@ -8,7 +8,7 @@ from app.config import vector_store_config as vc
 
 def load_documents(store: Chroma):
     json_files = [p for p in Path(str(vc.schema_dir)).iterdir() if p.suffix == ".json"]
-    print(f"Loading {len(json_files)} JSON files in {vc.schema_dir}")
+    print(f"📂 Loading {len(json_files)} JSON files from {vc.schema_dir}")
     docs = []
     for json_file in json_files:
         loader = JSONLoader(
@@ -17,7 +17,7 @@ def load_documents(store: Chroma):
             text_content=False,
         )
         docs.extend(loader.load())
-    print(f"Loaded {len(docs)} schemas\n")
+    print(f"✅ Loaded {len(docs)} schemas\n")
     store.add_documents(docs)
 
 
@@ -25,7 +25,7 @@ def get_or_create_vector_store():
     persist_directory = Path(vc.persist_dir)
     vector_store = Chroma(
         persist_directory=str(persist_directory),
-        collection_name="snowflake_schema",
+        collection_name=vc.collection_name,
         embedding_function=OpenAIEmbeddings(model=vc.embedding_model),
     )
 

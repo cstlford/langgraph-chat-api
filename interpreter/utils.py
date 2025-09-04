@@ -35,7 +35,6 @@ from fastapi import HTTPException
 
 import matplotlib.pyplot as plt
 from config import logger, TEMP_IMAGE_DIR
- 
 
 
 class ExecuteSQLCallable(Protocol):
@@ -102,12 +101,14 @@ def capture_matplotlib_figures() -> list[str]:
     return images
 
 
- 
+def capture_objects(local_vars: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
+    """Capture created objects, including DataFrame contents.
 
-
-def capture_objects(local_vars: dict[str, Any]) -> dict[str, Any]:
-    """Capture created objects, including DataFrame contents"""
+    For DataFrames we save a CSV into TEMP_IMAGE_DIR and return a file URL reference.
+    Returns a tuple: (objects_dict, list_of_file_urls).
+    """
     objects = {}
+    files: list[str] = []
     excluded_keys = {
         "execute_sql",
         "plt",
@@ -148,6 +149,11 @@ def capture_objects(local_vars: dict[str, Any]) -> dict[str, Any]:
         "pandas",
         "seaborn",
     }
+    try:
+        os.makedirs(TEMP_IMAGE_DIR, exist_ok=True)
+    except Exception:
+        pass
+
     for key, value in local_vars.items():
         if key.startswith("_") or key in excluded_keys or callable(value):
             continue
@@ -167,13 +173,23 @@ def capture_objects(local_vars: dict[str, Any]) -> dict[str, Any]:
                     else f"Dict with {len(value)} keys"
                 )
             elif isinstance(value, pd.DataFrame):
-                # Return column names and up to 5 rows as a dict
-                objects[key] = {
+                df_info = {
                     "type": "DataFrame",
                     "shape": [value.shape[0], value.shape[1]],
                     "columns": list(value.columns),
                     "data": value.head(5).to_dict(orient="records"),
                 }
+                try:
+                    file_id = str(uuid.uuid4())
+                    file_path = os.path.join(TEMP_IMAGE_DIR, f"{file_id}.csv")
+                    value.to_csv(file_path, index=False)
+                    file_url = f"/files/temp/{file_id}.csv"
+                    files.append(file_url)
+                    df_info["file"] = file_url
+
+                except Exception as e:
+                    df_info["file_error"] = str(e)[:500]
+                objects[key] = df_info
             elif isinstance(value, np.ndarray):
                 objects[key] = {
                     "type": "Array",
@@ -189,7 +205,7 @@ def capture_objects(local_vars: dict[str, Any]) -> dict[str, Any]:
                 objects[key] = f"{type(value).__name__}: {str(value)[:500]}"
         except Exception as e:
             objects[key] = f"<Error capturing object: {str(e)}>"
-    return objects
+    return objects, files
 
 
 async def execute_code_async(code: str, bound_execute_sql: ExecuteSQLCallable) -> dict:
@@ -201,6 +217,7 @@ async def execute_code_async(code: str, bound_execute_sql: ExecuteSQLCallable) -
         "errors": "",
         "images": [],
         "objects": {},
+        "files": [],
         "execution_time": 0.0,
     }
     start_time = time.time()
@@ -265,7 +282,9 @@ async def execute_code_async(code: str, bound_execute_sql: ExecuteSQLCallable) -
         result["output"] = stdout_buffer.getvalue()
         result["errors"] = stderr_buffer.getvalue()
         result["images"] = capture_matplotlib_figures()
-        result["objects"] = capture_objects(exec_env)
+        objs, files = capture_objects(exec_env)
+        result["objects"] = objs
+        result["files"] = files
         result["status"] = "success"
     except asyncio.TimeoutError:
         result["status"] = "timeout"

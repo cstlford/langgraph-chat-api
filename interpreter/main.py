@@ -78,3 +78,18 @@ if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+@app.get("/files/temp/{file_id}.csv")
+async def serve_file(file_id: str):
+    """Serve temporary CSV files from /tmp"""
+    file_path = os.path.join(TEMP_IMAGE_DIR, f"{file_id}.csv")
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    return FileResponse(file_path, media_type="text/csv")
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -18,19 +18,32 @@ from app.database.vector_database.vector_db import get_or_create_vector_store
 async def code_interpreter(code: str, config: RunnableConfig):
     """Execute Python code in a secure sandboxed environment.
 
-    You have access to a preloaded Python environment with common data science, math, and visualization libraries, including:
+    You have access to a preloaded Python environment with common data science, math, and visualization libraries:
     - pandas, numpy, matplotlib, seaborn
 
-    A helper function `execute_sql(sql: str) -> pd.DataFrame` is also available for querying Snowflake.
-    Use it to run SELECT queries and receive results as a pandas DataFrame.
+    <execute_sql function>
+    A helper function `execute_sql(sql: str) -> pd.DataFrame` is available for querying Snowflake.
+    Use it for SELECT queries and receive results as a pandas DataFrame.
+    Always use dates in yyyymmdd format in your sql queries.
+    </execute_sql function>
 
-    Returns {'output': str, 'errors': str, 'images': [], 'objects': {}}
+    Return format:
+    {
+        'status': 'success' | 'error' | 'timeout',
+        'output': str,        # printed text
+        'errors': str,        # stderr
+        'images': [str],      # URLs for saved matplotlib/seaborn plots
+        'objects': {...},     # captured variables (with previews)
+        'files': [str],       # downloadable files (e.g., CSVs for DataFrames)
+        'execution_time': float
+    }
 
-    Important! To return results, either print them or assign them to a variable.
-    ex:
-        print(execute_sql("SELECT * FROM my_table")) // returns as output
-        or
-        result = execute_sql("SELECT * FROM my_table") // returns as object
+    Important:
+    - To capture results, either print them (goes to 'output') OR assign them to a variable (goes to 'objects' and saves a CSV in 'files'), not both.
+    Example:
+        print(execute_sql("SELECT * FROM my_table"))   # appears only in 'output'
+        df = execute_sql("SELECT * FROM my_table")     # appears in 'objects' + CSV in 'files'
+    - Visualizations made with matplotlib/seaborn are saved automatically and appear in 'images'.
     """
     url = settings.interpreter_url
     database = config.get("configurable", {}).get("database", None)
@@ -44,7 +57,9 @@ async def code_interpreter(code: str, config: RunnableConfig):
         )
         resp.raise_for_status()
 
-        return resp.json()
+        response = resp.json()
+        print(response)
+        return response
 
 
 @tool
